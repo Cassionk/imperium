@@ -131,15 +131,20 @@ function gerarCodigoAleatorio(tamanho) {
 
 window.copiarCodigoPix = async function() {
     const codigoInput = document.getElementById('pixCodigo');
-    try {
-        await navigator.clipboard.writeText(codigoInput.value);
-        alert('Código Pix copiado!');
-    } catch (err) {
-        // Fallback para navegadores antigos
-        codigoInput.select();
-        document.execCommand('copy');
-        alert('Código Pix copiado!');
+    // Clipboard API requires HTTPS, check if available
+    if (navigator.clipboard && window.isSecureContext) {
+        try {
+            await navigator.clipboard.writeText(codigoInput.value);
+            alert('Código Pix copiado!');
+            return;
+        } catch (err) {
+            // Fall through to fallback
+        }
     }
+    // Fallback para navegadores antigos ou conexão HTTP
+    codigoInput.select();
+    document.execCommand('copy');
+    alert('Código Pix copiado!');
 }
 
 async function confirmarCompra(event) {
