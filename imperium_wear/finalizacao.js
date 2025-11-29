@@ -129,8 +129,19 @@ function gerarCodigoAleatorio(tamanho) {
     ).join('');
 }
 
-window.copiarCodigoPix = function() {
+window.copiarCodigoPix = async function() {
     const codigoInput = document.getElementById('pixCodigo');
+    // Clipboard API requires HTTPS, check if available
+    if (navigator.clipboard && window.isSecureContext) {
+        try {
+            await navigator.clipboard.writeText(codigoInput.value);
+            alert('Código Pix copiado!');
+            return;
+        } catch (err) {
+            // Fall through to fallback
+        }
+    }
+    // Fallback para navegadores antigos ou conexão HTTP
     codigoInput.select();
     document.execCommand('copy');
     alert('Código Pix copiado!');
@@ -161,7 +172,7 @@ async function confirmarCompra(event) {
         formData.append(key, dadosPessoais[key] || '');
     }
 
-    formData.append('id_cliente', 1);
+    // ID do cliente será obtido da sessão no backend
     formData.append('total_pedido', dadosCompra.total.toFixed(2));
     formData.append('valor_frete', dadosCompra.valorFrete.toFixed(2));
     formData.append('forma_pagamento', form.querySelector('[name="forma_pagamento"]')?.value);

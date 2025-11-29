@@ -1,6 +1,15 @@
 let produtos = [];
 let carrinho = [];
 
+// Função debounce para otimizar inputs
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     carregarProdutos();
 
@@ -21,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (numeroCasaElement) {
-        numeroCasaElement.addEventListener("input", atualizarCarrinho);
+        numeroCasaElement.addEventListener("input", debounce(atualizarCarrinho, 500));
     }
     
     const modal = new bootstrap.Modal(document.getElementById("carrinhoModal"));
@@ -55,22 +64,20 @@ function renderizarProdutos() {
     const produtosDiv = document.getElementById("produtos");
     if (!produtosDiv) return;
 
-    produtosDiv.innerHTML = "";
-
-    produtos.forEach((p, i) => {
-        produtosDiv.innerHTML += `
-            <div class="produto">
-                <div class="card p-2 text-center">
-                    <img src="${p.url_imagem}" class="card-img-top" alt="${p.nome}">
-                    <div class="card-body">
-                        <h5 class="card-title">${p.nome}</h5>
-                        <p>R$ ${parseFloat(p.preco).toFixed(2)}</p>
-                        <button class="btn btn-warning" onclick="adicionarCarrinho(${i})">Adicionar</button>
-                    </div>
+    const html = produtos.map((p, i) => `
+        <div class="produto">
+            <div class="card p-2 text-center">
+                <img src="${p.url_imagem}" class="card-img-top" alt="${p.nome}">
+                <div class="card-body">
+                    <h5 class="card-title">${p.nome}</h5>
+                    <p>R$ ${parseFloat(p.preco).toFixed(2)}</p>
+                    <button class="btn btn-warning" onclick="adicionarCarrinho(${i})">Adicionar</button>
                 </div>
             </div>
-        `;
-    });
+        </div>
+    `).join('');
+    
+    produtosDiv.innerHTML = html; // Uma única atribuição
 }
 
 async function atualizarCarrinho() {
@@ -87,7 +94,7 @@ async function atualizarCarrinho() {
           <button class="btn btn-sm btn-danger" onclick="removerCarrinho(${i})">x</button>
         </div>
       `;
-      subtotal += p.preco;
+      subtotal += p.preco * (p.quantidade || 1);
     });
 
     let valorFrete = 0;
@@ -133,9 +140,18 @@ function mostrarNotificacao(mensagem, tipo = "info") {
 window.adicionarCarrinho = function (i) {
     const produto = produtos[i];
     
-    carrinho.push({...produto, quantidade: 1}); 
+    // Verificar se produto já existe no carrinho
+    const itemExistente = carrinho.find(item => item.id === produto.id);
     
-    mostrarNotificacao(`${produto.nome} adicionado ao carrinho!`, "carrinho");
+    if (itemExistente) {
+        itemExistente.quantidade += 1;
+        mostrarNotificacao(`Quantidade de ${produto.nome} atualizada!`, "carrinho");
+    } else {
+        carrinho.push({...produto, quantidade: 1});
+        mostrarNotificacao(`${produto.nome} adicionado ao carrinho!`, "carrinho");
+    }
+    
+    atualizarCarrinho();
 };
 
 window.removerCarrinho = function (i) {
@@ -160,24 +176,37 @@ window.calcularFrete = async function (showAlert = true) {
         return 0;
     }
 
-    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    const d = await r.json();
+    try {
+        const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`, {
+            signal: AbortSignal.timeout(5000) // Timeout de 5s
+        });
+        
+        if (!r.ok) {
+            throw new Error('Erro na resposta da API');
+        }
+        
+        const d = await r.json();
 
-    if (d.erro) {
-        document.getElementById("bairroFrete").value = "CEP Inválido";
-        if (showAlert) mostrarNotificacao("CEP inválido!", "erro");
+        if (d.erro) {
+            document.getElementById("bairroFrete").value = "CEP Inválido";
+            if (showAlert) mostrarNotificacao("CEP inválido!", "erro");
+            return 0;
+        }
+
+        const estado = d.uf;
+        const valorFrete = window.calcularValorFretePorEstado(estado);
+        document.getElementById("bairroFrete").value = d.bairro || "Não encontrado";
+
+        if (showAlert) {
+            const freteFormatado = valorFrete.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            mostrarNotificacao(`Frete para ${d.bairro || "bairro não encontrado"}: ${freteFormatado}`, "info");
+        }
+        return valorFrete;
+    } catch (error) {
+        console.error('Erro ao buscar CEP:', error);
+        if (showAlert) mostrarNotificacao("Erro ao buscar CEP. Tente novamente.", "erro");
         return 0;
     }
-
-    const estado = d.uf;
-    const valorFrete = window.calcularValorFretePorEstado(estado);
-    document.getElementById("bairroFrete").value = d.bairro || "Não encontrado";
-
-    if (showAlert) {
-        const freteFormatado = valorFrete.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        mostrarNotificacao(`Frete para ${d.bairro || "bairro não encontrado"}: ${freteFormatado}`, "info");
-    }
-    return valorFrete;
 };
 
 window.finalizarCompra = function () {

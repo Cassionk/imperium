@@ -3,7 +3,7 @@ require "config.php";
 
 header('Content-Type: application/json; charset=utf-8');
 
-$sql = "SELECT id_produto, nome, preco, imagem_url FROM PRODUTOS";
+$sql = "SELECT id_produto, nome, preco, imagem_url as url_imagem FROM PRODUTOS";
 $resultado = $conexao->query($sql);
 
 $produtos = [];

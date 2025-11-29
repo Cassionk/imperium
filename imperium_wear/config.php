@@ -1,8 +1,9 @@
 <?php
-$host = "localhost";
-$usuario = "root";
-$senha = "";
-$banco = "imperium";
+// Carregar variáveis de ambiente
+$host = getenv('DB_HOST') ?: 'localhost';
+$usuario = getenv('DB_USER') ?: 'root';
+$senha = getenv('DB_PASSWORD') ?: '';
+$banco = getenv('DB_NAME') ?: 'imperium';
 
 $conexao = new mysqli($host, $usuario, $senha, $banco);
 
