@@ -111,7 +111,15 @@ mysql -u root -p < database.sql
 ### 3. Configure as credenciais (opcional)
 
 \`\`\`bash
+# Linux/macOS:
 cp .env.example .env
+
+# Windows (PowerShell):
+Copy-Item .env.example .env
+
+# Windows (CMD):
+copy .env.example .env
+
 # Edite o arquivo .env com suas credenciais se necessário
 \`\`\`
 

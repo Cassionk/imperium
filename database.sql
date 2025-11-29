@@ -106,7 +106,7 @@ INSERT INTO PRODUTOS (nome, preco, imagem_url) VALUES
 -- Senha: 123456 (hash gerado com password_hash())
 -- -----------------------------------------------------------------------------
 INSERT INTO CLIENTES (nome, email, senha, rua, numero, bairro, cidade, estado, cep) VALUES
-    ('Cliente Teste', 'teste@imperium.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Rua Exemplo', '100', 'Centro', 'São Paulo', 'SP', '01310-100');
+    ('Cliente Teste', 'teste@imperium.com', '$2y$10$RgISahpzWsk/ByswypZbgu6VrAwdtlAyHTTwge7.hVdVX0BOpGz7.', 'Rua Exemplo', '100', 'Centro', 'São Paulo', 'SP', '01310-100');
 
 -- -----------------------------------------------------------------------------
 -- INSERIR COMPRA DE EXEMPLO

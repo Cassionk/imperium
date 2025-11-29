@@ -81,14 +81,17 @@ Antes de começar, verifique se você possui:
 ### Linux (Ubuntu/Debian)
 
 ```bash
-# Baixe o XAMPP
-wget https://sourceforge.net/projects/xampp/files/XAMPP%20Linux/8.2.12/xampp-linux-x64-8.2.12-0-installer.run
+# Acesse o site oficial e baixe a versão mais recente:
+# https://www.apachefriends.org/download.html
+
+# Exemplo de instalação (substitua a versão pela mais recente disponível):
+# wget https://sourceforge.net/projects/xampp/files/XAMPP%20Linux/X.X.X/xampp-linux-x64-X.X.X-0-installer.run
 
 # Dê permissão de execução
-chmod +x xampp-linux-x64-8.2.12-0-installer.run
+chmod +x xampp-linux-x64-*-installer.run
 
 # Execute como root
-sudo ./xampp-linux-x64-8.2.12-0-installer.run
+sudo ./xampp-linux-x64-*-installer.run
 
 # Inicie os serviços
 sudo /opt/lampp/lampp start
